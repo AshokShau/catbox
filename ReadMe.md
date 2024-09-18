@@ -7,6 +7,11 @@ The `catbox` package provides functions to upload files to CatBox and LitterBox,
 - **Upload files to CatBox**: Use `UploadFile` to upload a file to a specific user account.
 - **Upload files to LitterBox**: Use `UploadToLitterBox` to upload files with a specified storage duration.
 
+### ToDo's
+- [ ] deleteFiles(files, userHash) - Delete files from CatBox with a specific user account.
+- [ ] uploadAlbum(files, title, description, userHash): Create an album with the uploaded files.
+- [ ] deleteAlbum, editAlbum, createAlbum ... etc
+
 ## Installation
 
 To use the `catbox` package in your Go project, you can import it directly:
