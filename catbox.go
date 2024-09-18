@@ -20,30 +20,17 @@ func UploadFile(fileBuffer *bytes.Buffer, fileName string, timeout time.Duration
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
 
-	part, err := writer.CreateFormFile("fileToUpload", fileName)
-	if err != nil {
+	if part, err := writer.CreateFormFile("fileToUpload", fileName); err != nil {
 		return "", fmt.Errorf("failed to create form file: %w", err)
-	}
-
-	if _, err = io.Copy(part, fileBuffer); err != nil {
+	} else if _, err = io.Copy(part, fileBuffer); err != nil {
 		return "", fmt.Errorf("failed to copy file content: %w", err)
 	}
 
-	if err = writer.WriteField("reqtype", "fileupload"); err != nil {
-		return "", fmt.Errorf("failed to write reqtype: %w", err)
-	}
-
+	_ = writer.WriteField("reqtype", "fileupload")
 	if userHash != "" {
-		if err = writer.WriteField("userHash", userHash); err != nil {
-			return "", fmt.Errorf("failed to write userHash: %w", err)
-		}
+		_ = writer.WriteField("userHash", userHash)
 	}
-
-	defer func() {
-		if err = writer.Close(); err != nil {
-			fmt.Printf("failed to close writer: %s\n", err)
-		}
-	}()
+	_ = writer.Close()
 
 	req, err := http.NewRequest("POST", "https://catbox.moe/user/api.php", &buf)
 	if err != nil {
@@ -82,40 +69,22 @@ func UploadToLitterBox(fileBuffer *bytes.Buffer, fileName string, duration strin
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
 
-	// Create the form file
-	part, err := writer.CreateFormFile("fileToUpload", fileName)
-	if err != nil {
+	if part, err := writer.CreateFormFile("fileToUpload", fileName); err != nil {
 		return "", fmt.Errorf("failed to create form file: %w", err)
-	}
-
-	// Copy the contents of the bytes.Buffer to the form file
-	if _, err = io.Copy(part, fileBuffer); err != nil {
+	} else if _, err = io.Copy(part, fileBuffer); err != nil {
 		return "", fmt.Errorf("failed to copy file content: %w", err)
 	}
 
-	// Write additional fields
-	if err = writer.WriteField("reqtype", "fileupload"); err != nil {
-		return "", fmt.Errorf("failed to write reqtype: %w", err)
+	_ = writer.WriteField("reqtype", "fileupload")
+	_ = writer.WriteField("time", duration)
+	_ = writer.Close()
 
-	}
-	if err = writer.WriteField("time", duration); err != nil {
-		return "", fmt.Errorf("failed to write time: %w", err)
-	}
-
-	defer func() {
-		if err = writer.Close(); err != nil {
-			fmt.Printf("failed to close writer: %s\n", err)
-		}
-	}()
-
-	// Create the HTTP request
 	req, err := http.NewRequest("POST", "https://litterbox.catbox.moe/resources/internals/api.php", &buf)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	// Create the HTTP client and send the request
 	client := &http.Client{Timeout: timeout}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -127,13 +96,11 @@ func UploadToLitterBox(fileBuffer *bytes.Buffer, fileName string, duration strin
 	}
 	defer resp.Body.Close()
 
-	// Check the response status
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return "", fmt.Errorf("HTTP error occurred: %s - %s", resp.Status, string(body))
 	}
 
-	// Read and return the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read response body: %w", err)

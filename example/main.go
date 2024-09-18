@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/AshokShau/go-catbox"
+	"github.com/AshokShau/catbox"
 )
 
 func main() {
